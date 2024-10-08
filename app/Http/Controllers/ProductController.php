@@ -6,15 +6,16 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Models\Product;
 
-class Controller extends Controller
+class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index() : View
     {
-        return view('index', [
+        return view('products.index', [
             'products' => Product::latest()->paginate(3)
         ]);
     }
@@ -32,8 +33,15 @@ class Controller extends Controller
      */
     public function store(StoreProductRequest $request) : RedirectResponse
     {
-        Product::create($request->all());
-        return redirect()->route('index')
+        // $product = Product::create($request->all());
+        $product = new Product();
+        $product->code = $request->code;
+        $product->name = $request->name;
+        $product->quantity = $request->quantity;
+        $product->price = $request->price;
+        $product->description = $request->price;
+        $product->save();
+        return redirect()->route('products.index')
                 ->withSuccess('New product is added successfully.');
     }
 
@@ -43,18 +51,22 @@ class Controller extends Controller
     public function show(Product $product) : View
     {
         return view('products.show', [
-            'product' => $products
+            'product' => $product
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Product $product) : View
-    {
-        return view('products.edit', [
-            'products' => $product
-        ]);
+    // public function edit(Product $product) : View
+    // {
+    //     return view('products.edit', [
+    //         'product' => $product
+    //     ]);
+    // }
+    public function edit($id){
+        $product = Product::find($id);
+        return view('products.edit', compact('product'));
     }
 
     /**
@@ -70,7 +82,7 @@ class Controller extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Product) : RedirectResponse
+    public function destroy(Product $product) : RedirectResponse
     {
         $product->delete();
         return redirect()->route('index')
